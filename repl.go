@@ -6,12 +6,19 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/DuskMcDusk/pokedexcli/internal/pokeapi"
 )
+
+type config struct {
+	prevLocationURL *string
+	nextLocationURL *string
+}
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(cfg *Config) error
+	callback    func(cfg *config) error
 }
 
 func GetCommandMap() map[string]cliCommand {
@@ -45,13 +52,13 @@ func cleaninput(text string) []string {
 	return entries
 }
 
-func commandExit(cfg *Config) error {
+func commandExit(cfg *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *Config) error {
+func commandHelp(cfg *config) error {
 	fmt.Println("Welcome to the Pokedex!\nUsage:")
 	fmt.Println()
 	for key, command := range GetCommandMap() {
@@ -60,8 +67,8 @@ func commandHelp(cfg *Config) error {
 	return nil
 }
 
-func commandMap(cfg *Config) error {
-	locationResult, err := GetPokeMap(cfg.nextLocationURL)
+func commandMap(cfg *config) error {
+	locationResult, err := pokeapi.GetPokeMap(cfg.nextLocationURL)
 	if err != nil {
 		return err
 	}
@@ -74,11 +81,11 @@ func commandMap(cfg *Config) error {
 	return nil
 }
 
-func commandMapb(cfg *Config) error {
+func commandMapb(cfg *config) error {
 	if cfg.prevLocationURL == nil {
 		return errors.New("you're on the first page")
 	}
-	locationResult, err := GetPokeMap(cfg.prevLocationURL)
+	locationResult, err := pokeapi.GetPokeMap(cfg.prevLocationURL)
 	if err != nil {
 		return err
 	}
@@ -91,7 +98,7 @@ func commandMapb(cfg *Config) error {
 	return nil
 }
 
-func startRepl(cfg *Config) {
+func startRepl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
